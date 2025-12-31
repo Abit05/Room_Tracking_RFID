@@ -7,17 +7,19 @@ interface RoomStatusCardProps {
 }
 
 export const RoomStatusCard: React.FC<RoomStatusCardProps> = ({ room }) => {
+  const getStatusText = (count: number) => {
+    if (count === 0) return 'Company is empty';
+    if (count === 1) return 'Person in Company';
+    return 'People in room';
+  };
+
   return (
-    <View style={styles.roomCard}>
+    <View style={styles.card}>
       {room ? (
         <>
-          <Text style={styles.roomName}>{room.name}</Text>
-          <Text style={styles.roomCount}>{room.current_count}</Text>
-          <Text style={styles.roomStatus}>
-            {room.current_count === 0 ? 'Room is empty' : 
-             room.current_count === 1 ? 'Person in room' : 
-             'People in room'}
-          </Text>
+          <Text style={styles.name}>Employee Attendance</Text>
+          <Text style={styles.count}>{room.current_count}</Text>
+          <Text style={styles.status}>{getStatusText(room.current_count)}</Text>
         </>
       ) : (
         <ActivityIndicator size="large" color="#007AFF" />
@@ -27,37 +29,35 @@ export const RoomStatusCard: React.FC<RoomStatusCardProps> = ({ room }) => {
 };
 
 const styles = StyleSheet.create({
-  roomCard: {
+  card: {
     backgroundColor: 'white',
-    padding: 20, 
+    padding: 20,
     borderRadius: 20,
     alignItems: 'center',
-    marginBottom: 0,
     width: '100%',
-    maxWidth: '100%', 
+    maxWidth: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
-    minHeight: 200, 
+    minHeight: 200,
     justifyContent: 'center',
   },
-  roomName: {
+  name: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,
     textAlign: 'center',
-    flexWrap: 'wrap',
   },
-  roomCount: {
+  count: {
     fontSize: 48,
     fontWeight: 'bold',
     color: '#007AFF',
     marginBottom: 5,
   },
-  roomStatus: {
+  status: {
     fontSize: 16,
     color: '#666',
     fontStyle: 'italic',

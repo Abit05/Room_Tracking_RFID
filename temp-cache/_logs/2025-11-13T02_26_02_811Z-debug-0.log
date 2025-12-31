@@ -1,0 +1,161 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Users\Lenovo\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.6.0
+2 info using node@v24.8.0
+3 silly config load:file:C:\Users\Lenovo\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:D:\Testing\BackUp2\.npmrc
+5 silly config load:file:C:\Users\Lenovo\.npmrc
+6 silly config load:file:C:\Users\Lenovo\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm exec npkill
+8 verbose argv "exec" "--cache" "./temp-cache" "--" "npkill"
+9 verbose logfile logs-max:10 dir:D:\Testing\BackUp2\temp-cache\_logs\2025-11-13T02_26_02_811Z-
+10 verbose logfile D:\Testing\BackUp2\temp-cache\_logs\2025-11-13T02_26_02_811Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+13 http fetch GET 200 https://registry.npmjs.org/npkill 4335ms (cache miss)
+14 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+15 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+16 http fetch GET 200 https://registry.npmjs.org/npm 6013ms
+17 silly idealTree buildDeps
+18 silly fetch manifest npkill@0.12.2
+19 silly packumentCache full:https://registry.npmjs.org/npkill cache-miss
+20 http fetch GET 200 https://registry.npmjs.org/npkill 354ms (cache miss)
+21 silly packumentCache full:https://registry.npmjs.org/npkill set size:undefined disposed:false
+22 silly placeDep ROOT npkill@0.12.2 OK for:  want: 0.12.2
+23 silly fetch manifest rxjs@^7.8.1
+24 silly packumentCache full:https://registry.npmjs.org/rxjs cache-miss
+25 silly fetch manifest colors@1.4.0
+26 silly packumentCache full:https://registry.npmjs.org/colors cache-miss
+27 silly fetch manifest node-emoji@^2.1.3
+28 silly packumentCache full:https://registry.npmjs.org/node-emoji cache-miss
+29 silly fetch manifest ansi-escapes@^6.2.1
+30 silly packumentCache full:https://registry.npmjs.org/ansi-escapes cache-miss
+31 silly fetch manifest get-folder-size@^4.0.0
+32 silly packumentCache full:https://registry.npmjs.org/get-folder-size cache-miss
+33 silly fetch manifest open-file-explorer@^1.0.2
+34 silly packumentCache full:https://registry.npmjs.org/open-file-explorer cache-miss
+35 http fetch GET 200 https://registry.npmjs.org/rxjs 539ms (cache miss)
+36 silly packumentCache full:https://registry.npmjs.org/rxjs set size:undefined disposed:false
+37 http fetch GET 200 https://registry.npmjs.org/ansi-escapes 637ms (cache miss)
+38 silly packumentCache full:https://registry.npmjs.org/ansi-escapes set size:undefined disposed:false
+39 http fetch GET 200 https://registry.npmjs.org/node-emoji 696ms (cache miss)
+40 silly packumentCache full:https://registry.npmjs.org/node-emoji set size:undefined disposed:false
+41 http fetch GET 200 https://registry.npmjs.org/get-folder-size 862ms (cache miss)
+42 silly packumentCache full:https://registry.npmjs.org/get-folder-size set size:undefined disposed:false
+43 http fetch GET 200 https://registry.npmjs.org/open-file-explorer 954ms (cache miss)
+44 silly packumentCache full:https://registry.npmjs.org/open-file-explorer set size:undefined disposed:false
+45 http fetch GET 200 https://registry.npmjs.org/colors 2352ms (cache miss)
+46 silly packumentCache full:https://registry.npmjs.org/colors set size:undefined disposed:false
+47 silly placeDep ROOT ansi-escapes@6.2.1 OK for: npkill@0.12.2 want: ^6.2.1
+48 silly placeDep ROOT colors@1.4.0 OK for: npkill@0.12.2 want: 1.4.0
+49 silly placeDep ROOT get-folder-size@4.0.0 OK for: npkill@0.12.2 want: ^4.0.0
+50 silly placeDep ROOT node-emoji@2.2.0 OK for: npkill@0.12.2 want: ^2.1.3
+51 silly placeDep ROOT open-file-explorer@1.0.2 OK for: npkill@0.12.2 want: ^1.0.2
+52 silly placeDep ROOT rxjs@7.8.2 OK for: npkill@0.12.2 want: ^7.8.1
+53 silly fetch manifest gar@^1.0.4
+54 silly packumentCache full:https://registry.npmjs.org/gar cache-miss
+55 silly fetch manifest @sindresorhus/is@^4.6.0
+56 silly packumentCache full:https://registry.npmjs.org/@sindresorhus%2fis cache-miss
+57 silly fetch manifest char-regex@^1.0.2
+58 silly packumentCache full:https://registry.npmjs.org/char-regex cache-miss
+59 silly fetch manifest emojilib@^2.4.0
+60 silly packumentCache full:https://registry.npmjs.org/emojilib cache-miss
+61 silly fetch manifest skin-tone@^2.0.0
+62 silly packumentCache full:https://registry.npmjs.org/skin-tone cache-miss
+63 silly fetch manifest tslib@^2.1.0
+64 silly packumentCache full:https://registry.npmjs.org/tslib cache-miss
+65 http fetch GET 200 https://registry.npmjs.org/char-regex 34ms (cache miss)
+66 silly packumentCache full:https://registry.npmjs.org/char-regex set size:undefined disposed:false
+67 http fetch GET 200 https://registry.npmjs.org/skin-tone 215ms (cache miss)
+68 silly packumentCache full:https://registry.npmjs.org/skin-tone set size:undefined disposed:false
+69 http fetch GET 200 https://registry.npmjs.org/tslib 216ms (cache miss)
+70 silly packumentCache full:https://registry.npmjs.org/tslib set size:undefined disposed:false
+71 http fetch GET 200 https://registry.npmjs.org/emojilib 602ms (cache miss)
+72 silly packumentCache full:https://registry.npmjs.org/emojilib set size:undefined disposed:false
+73 http fetch GET 200 https://registry.npmjs.org/@sindresorhus%2fis 604ms (cache miss)
+74 silly packumentCache full:https://registry.npmjs.org/@sindresorhus%2fis set size:undefined disposed:false
+75 http fetch GET 200 https://registry.npmjs.org/gar 1330ms (cache miss)
+76 silly packumentCache full:https://registry.npmjs.org/gar set size:undefined disposed:false
+77 silly placeDep ROOT gar@1.0.4 OK for: get-folder-size@4.0.0 want: ^1.0.4
+78 silly placeDep ROOT @sindresorhus/is@4.6.0 OK for: node-emoji@2.2.0 want: ^4.6.0
+79 silly placeDep ROOT char-regex@1.0.2 OK for: node-emoji@2.2.0 want: ^1.0.2
+80 silly placeDep ROOT emojilib@2.4.0 OK for: node-emoji@2.2.0 want: ^2.4.0
+81 silly placeDep ROOT skin-tone@2.0.0 OK for: node-emoji@2.2.0 want: ^2.0.0
+82 silly fetch manifest unicode-emoji-modifier-base@^1.0.0
+83 silly packumentCache full:https://registry.npmjs.org/unicode-emoji-modifier-base cache-miss
+84 http fetch GET 200 https://registry.npmjs.org/unicode-emoji-modifier-base 163ms (cache miss)
+85 silly packumentCache full:https://registry.npmjs.org/unicode-emoji-modifier-base set size:undefined disposed:false
+86 silly placeDep ROOT tslib@2.8.1 OK for: rxjs@7.8.2 want: ^2.1.0
+87 silly placeDep ROOT unicode-emoji-modifier-base@1.0.0 OK for: skin-tone@2.0.0 want: ^1.0.0
+88 silly reify moves {}
+89 silly audit bulk request {
+89 silly audit   npkill: [ '0.12.2' ],
+89 silly audit   'ansi-escapes': [ '6.2.1' ],
+89 silly audit   colors: [ '1.4.0' ],
+89 silly audit   'get-folder-size': [ '4.0.0' ],
+89 silly audit   'node-emoji': [ '2.2.0' ],
+89 silly audit   'open-file-explorer': [ '1.0.2' ],
+89 silly audit   rxjs: [ '7.8.2' ],
+89 silly audit   gar: [ '1.0.4' ],
+89 silly audit   '@sindresorhus/is': [ '4.6.0' ],
+89 silly audit   'char-regex': [ '1.0.2' ],
+89 silly audit   emojilib: [ '2.4.0' ],
+89 silly audit   'skin-tone': [ '2.0.0' ],
+89 silly audit   tslib: [ '2.8.1' ],
+89 silly audit   'unicode-emoji-modifier-base': [ '1.0.0' ]
+89 silly audit }
+90 http cache unicode-emoji-modifier-base@https://registry.npmjs.org/unicode-emoji-modifier-base/-/unicode-emoji-modifier-base-1.0.0.tgz 0ms (cache hit)
+91 http cache tslib@https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz 0ms (cache hit)
+92 http cache @sindresorhus/is@https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz 0ms (cache hit)
+93 http cache emojilib@https://registry.npmjs.org/emojilib/-/emojilib-2.4.0.tgz 0ms (cache hit)
+94 http cache skin-tone@https://registry.npmjs.org/skin-tone/-/skin-tone-2.0.0.tgz 0ms (cache hit)
+95 http cache gar@https://registry.npmjs.org/gar/-/gar-1.0.4.tgz 0ms (cache hit)
+96 http cache char-regex@https://registry.npmjs.org/char-regex/-/char-regex-1.0.2.tgz 0ms (cache hit)
+97 http cache rxjs@https://registry.npmjs.org/rxjs/-/rxjs-7.8.2.tgz 0ms (cache hit)
+98 http cache open-file-explorer@https://registry.npmjs.org/open-file-explorer/-/open-file-explorer-1.0.2.tgz 0ms (cache hit)
+99 http cache get-folder-size@https://registry.npmjs.org/get-folder-size/-/get-folder-size-4.0.0.tgz 0ms (cache hit)
+100 http cache node-emoji@https://registry.npmjs.org/node-emoji/-/node-emoji-2.2.0.tgz 0ms (cache hit)
+101 http cache colors@https://registry.npmjs.org/colors/-/colors-1.4.0.tgz 0ms (cache hit)
+102 http cache ansi-escapes@https://registry.npmjs.org/ansi-escapes/-/ansi-escapes-6.2.1.tgz 0ms (cache hit)
+103 http cache npkill@https://registry.npmjs.org/npkill/-/npkill-0.12.2.tgz 0ms (cache hit)
+104 silly tarball no local data for unicode-emoji-modifier-base@https://registry.npmjs.org/unicode-emoji-modifier-base/-/unicode-emoji-modifier-base-1.0.0.tgz. Extracting by manifest.
+105 silly tarball no local data for tslib@https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz. Extracting by manifest.
+106 silly tarball no local data for @sindresorhus/is@https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz. Extracting by manifest.
+107 silly tarball no local data for emojilib@https://registry.npmjs.org/emojilib/-/emojilib-2.4.0.tgz. Extracting by manifest.
+108 silly tarball no local data for skin-tone@https://registry.npmjs.org/skin-tone/-/skin-tone-2.0.0.tgz. Extracting by manifest.
+109 silly tarball no local data for gar@https://registry.npmjs.org/gar/-/gar-1.0.4.tgz. Extracting by manifest.
+110 silly tarball no local data for char-regex@https://registry.npmjs.org/char-regex/-/char-regex-1.0.2.tgz. Extracting by manifest.
+111 silly tarball no local data for rxjs@https://registry.npmjs.org/rxjs/-/rxjs-7.8.2.tgz. Extracting by manifest.
+112 silly tarball no local data for open-file-explorer@https://registry.npmjs.org/open-file-explorer/-/open-file-explorer-1.0.2.tgz. Extracting by manifest.
+113 silly tarball no local data for get-folder-size@https://registry.npmjs.org/get-folder-size/-/get-folder-size-4.0.0.tgz. Extracting by manifest.
+114 silly tarball no local data for node-emoji@https://registry.npmjs.org/node-emoji/-/node-emoji-2.2.0.tgz. Extracting by manifest.
+115 silly tarball no local data for colors@https://registry.npmjs.org/colors/-/colors-1.4.0.tgz. Extracting by manifest.
+116 silly tarball no local data for ansi-escapes@https://registry.npmjs.org/ansi-escapes/-/ansi-escapes-6.2.1.tgz. Extracting by manifest.
+117 silly tarball no local data for npkill@https://registry.npmjs.org/npkill/-/npkill-0.12.2.tgz. Extracting by manifest.
+118 http fetch GET 200 https://registry.npmjs.org/unicode-emoji-modifier-base/-/unicode-emoji-modifier-base-1.0.0.tgz 208ms (cache miss)
+119 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 400ms
+120 silly audit report {}
+121 http fetch GET 200 https://registry.npmjs.org/emojilib/-/emojilib-2.4.0.tgz 481ms (cache miss)
+122 http fetch GET 200 https://registry.npmjs.org/gar/-/gar-1.0.4.tgz 517ms (cache miss)
+123 warn deprecated gar@1.0.4: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+124 http fetch GET 200 https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz 532ms (cache miss)
+125 http fetch GET 200 https://registry.npmjs.org/ansi-escapes/-/ansi-escapes-6.2.1.tgz 547ms (cache miss)
+126 http fetch GET 200 https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz 627ms (cache miss)
+127 http fetch GET 200 https://registry.npmjs.org/skin-tone/-/skin-tone-2.0.0.tgz 838ms (cache miss)
+128 http fetch GET 200 https://registry.npmjs.org/colors/-/colors-1.4.0.tgz 859ms (cache miss)
+129 http fetch GET 200 https://registry.npmjs.org/node-emoji/-/node-emoji-2.2.0.tgz 899ms (cache miss)
+130 http fetch GET 200 https://registry.npmjs.org/get-folder-size/-/get-folder-size-4.0.0.tgz 976ms (cache miss)
+131 http fetch GET 200 https://registry.npmjs.org/npkill/-/npkill-0.12.2.tgz 1046ms (cache miss)
+132 http fetch GET 200 https://registry.npmjs.org/char-regex/-/char-regex-1.0.2.tgz 1850ms (cache miss)
+133 http fetch GET 200 https://registry.npmjs.org/open-file-explorer/-/open-file-explorer-1.0.2.tgz 1851ms (cache miss)
+134 http fetch GET 200 https://registry.npmjs.org/rxjs/-/rxjs-7.8.2.tgz 5763ms (cache miss)
+135 verbose cwd D:\Testing\BackUp2
+136 verbose os Windows_NT 10.0.26200
+137 verbose node v24.8.0
+138 verbose npm  v11.6.0
+139 notice
+139 notice New [36mpatch[39m version of npm available! [36m11.6.0[39m -> [34m11.6.2[39m
+139 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v11.6.2[39m
+139 notice To update run: [4mnpm install -g npm@11.6.2[24m
+139 notice  { force: true, Symbol(proc-log.meta): true }
+140 verbose exit 0
+141 info ok

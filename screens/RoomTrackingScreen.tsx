@@ -6,44 +6,23 @@ import { LastActivityCard } from '../components/LastActivityCard';
 import { NFCSection } from '../components/NFCSection';
 import { ActionButtons } from '../components/ActionButtons';
 import { NFCStatusIndicator } from '../components/NFCStatusIndicator';
-import { RoomSelector } from '../components/RoomSelector';
-import { RoomSelectorButton } from '../components/RoomSelectorButton';
 import { EmployeesInRoomSection } from '../components/EmployeesInRoomSection';
+import { ActivityLogsButton } from '../components/ActivityLogsButton';
 import { useRoomTracking } from '../hooks/useRoomTracking';
 
 export default function RoomTrackingScreen({ navigation }: { navigation: any }) {
-  const {
-    currentRoom,
-    rooms,
-    selectedRoom,
-    showRoomSelector,
-    isLoading,
-    isScanning,
-    nfcStatus,
-    lastTap,
-    employeesInRoom,
-    refreshing,
-    fetchAllData,
-    refreshNfcStatus,
-    startRFIDScan,
-    stopRFIDScan,
-    testServerConnection,
-    handleRoomSelect,
-    handleOpenRoomSelector,
-    setShowRoomSelector
-  } = useRoomTracking(navigation);
+  const {currentRoom, selectedRoom, isLoading, isScanning, nfcStatus, lastTap, employeesInRoom, roomLogs, refreshing, fetchAllData, refreshNfcStatus, startRFIDScan, stopRFIDScan} = useRoomTracking(navigation);
 
   return (
     <View style={styles.container}>
-      <View style={styles.backgroundContainer}>
-        <LinearGradient
-          colors={['#ffbf00', '#ff8c00', '#04ded3', '#0463de', '#02b30e']}
-          style={StyleSheet.absoluteFillObject}/>
-      </View>
+      <LinearGradient
+        colors={['#ffbf00', '#ff8c00', '#04ded3', '#0463de', '#02b30e']}
+        style={StyleSheet.absoluteFillObject}
+      />
 
       <ScrollView 
         style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -53,25 +32,20 @@ export default function RoomTrackingScreen({ navigation }: { navigation: any }) 
           />
         }
       >
-        <Text style={styles.title}>Room Tracker</Text>
-        
-        <RoomSelectorButton 
-          selectedRoom={selectedRoom}
-          onPress={handleOpenRoomSelector}
-        />
-        <View style = {styles.containersplit}>
-          <View style = {styles.statusCard}>
+        <Text style={styles.title}>Employee Tracker</Text>
+        <View style={styles.splitLayout}>
+          <View style={styles.cardWrapper}>
             <RoomStatusCard room={currentRoom} />
           </View>
-          <View style = {styles.nfcContainer}>
-          <NFCSection
-            nfcStatus={nfcStatus}
-            isScanning={isScanning}
-            isLoading={isLoading}
-            onStartScan={startRFIDScan}
-            onStopScan={stopRFIDScan}
-            onRefreshStatus={refreshNfcStatus}
-          />
+          <View style={styles.cardWrapper}>
+            <NFCSection
+              nfcStatus={nfcStatus}
+              isScanning={isScanning}
+              isLoading={isLoading}
+              onStartScan={startRFIDScan}
+              onStopScan={stopRFIDScan}
+              onRefreshStatus={refreshNfcStatus}
+            />
           </View>
         </View>
 
@@ -82,23 +56,21 @@ export default function RoomTrackingScreen({ navigation }: { navigation: any }) 
           selectedRoom={selectedRoom}
         />
 
+        <ActivityLogsButton
+          roomLogs={roomLogs}
+          onPress={() => navigation.navigate('ActivityLogs', { 
+            roomLogs
+          })}
+        />
+
         <ActionButtons
           isLoading={isLoading}
           onRefresh={fetchAllData}
           onRegisterTest={() => navigation.navigate('Register')}
-          onTestConnection={testServerConnection}
         />
 
         <NFCStatusIndicator nfcStatus={nfcStatus} />
       </ScrollView>
-
-      <RoomSelector
-        rooms={rooms}
-        selectedRoom={selectedRoom}
-        onRoomSelect={handleRoomSelect}
-        visible={showRoomSelector}
-        onClose={() => setShowRoomSelector(false)}
-      />
     </View>
   );
 }
@@ -107,21 +79,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    flexDirection : 'row',
-  },
-  backgroundContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   scrollView: {
     flex: 1,
   },
-  contentContainer: {
+  content: {
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     paddingBottom: 40,
   },
   title: {
@@ -130,20 +94,19 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
     textAlign: 'center',
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
-  containersplit: {
+  splitLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom : 20,
+    width: '100%',
+    marginBottom: 20,
+    gap: 12,
   },
-  statusCard: {
-    flex:1,
-    paddingLeft: 20,
-    paddingRight : 5,
+  cardWrapper: {
+    flex: 1,
+    minHeight: 200,
   },
-  nfcContainer: {
-    flex:1,
-    paddingLeft: 5,
-    paddingRight : 20,
-  }
 });

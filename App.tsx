@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import RoomTrackingScreen from './screens/RoomTrackingScreen';
 import RegisterScreen from './screens/RegisterScreen';
+import ActivityLogsScreen from './screens/ActivityLogsScreen';
 
 const Stack = createStackNavigator();
 
@@ -13,30 +14,25 @@ export default function App() {
       <Stack.Navigator 
         initialRouteName="RoomTracking"
         screenOptions={{
-          headerStyle: {
-            backgroundColor: '#007AFF',
-          },
+          headerStyle: { backgroundColor: '#007AFF' },
           headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       >
         <Stack.Screen 
           name="RoomTracking" 
           component={RoomTrackingScreen}
-          options={{
-            title: 'Room Tracker',
-            headerShown: false,
-          }}
+          options={{ title: 'Room Tracker', headerShown: false }}
         />
         <Stack.Screen 
           name="Register" 
           component={RegisterScreen}
-          options={{
-            title: 'Register Employee',
-            headerShown : false,
-          }}
+          options={{ title: 'Register Employee', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="ActivityLogs" 
+          component={ActivityLogsScreen}
+          options={{ title: 'Activity Logs', headerShown: true }}
         />
       </Stack.Navigator>
     </NavigationContainer>

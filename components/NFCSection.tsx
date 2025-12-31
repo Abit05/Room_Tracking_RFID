@@ -12,43 +12,31 @@ interface NFCSectionProps {
 }
 
 export const NFCSection: React.FC<NFCSectionProps> = ({
-  nfcStatus,
-  isScanning,
-  isLoading,
-  onStartScan,
-  onStopScan,
-  onRefreshStatus,
-}) => {
-  
+  nfcStatus, isScanning, isLoading, onStartScan, onStopScan, onRefreshStatus}) => {
   const canScan = nfcStatus.hasNfc && nfcStatus.enabled;
 
-  const getSupportedColor = () => {
-    if (nfcStatus.hasNfc === null) return '#666';
-    return nfcStatus.hasNfc ? '#34C759' : '#FF3B30';
+  const getColor = (condition: boolean | null) => {
+    if (condition === null) return '#666';
+    return condition ? '#34C759' : '#FF3B30';
   };
 
-  const getStatusColor = () => {
-    if (nfcStatus.enabled === null) return '#666';
-    return nfcStatus.enabled ? '#34C759' : '#FF3B30';
-  };
-
-  const getStatusText = () => {
-    if (nfcStatus.enabled === null) return 'Checking...';
-    return nfcStatus.enabled ? 'Enabled' : 'Disabled';
+  const getStatusText = (condition: boolean | null, trueText: string, falseText: string) => {
+    if (condition === null) return 'Checking...';
+    return condition ? trueText : falseText;
   };
 
   return (
-    <View style={styles.scanSection}>
-
-      {/* NFC Status with Colors */}
-      <Text style={styles.statusLabel}>NFC Supported:</Text>
-      <Text style={[styles.statusValue, { color: getSupportedColor() }]}>
-        {nfcStatus.hasNfc === null ? 'Checking...' : nfcStatus.hasNfc ? 'Yes' : 'No'}
+    <View style={styles.container}>
+      <Text style={styles.label}>NFC Supported:
+        <Text style={[styles.value, { color: getColor(nfcStatus.hasNfc) }]}>
+        {getStatusText(nfcStatus.hasNfc, 'Yes', 'No')}
+      </Text>
       </Text>
     
-      <Text style={styles.statusLabel}>NFC Status:</Text>
-      <Text style={[styles.statusValue, { color: getStatusColor()},styles.paddingsize]}>
-        {getStatusText()}
+      <Text style={styles.label}>NFC Status:
+        <Text style={[styles.value, { color: getColor(nfcStatus.enabled) }, styles.spacing]}>
+          {getStatusText(nfcStatus.enabled, 'Enabled', 'Disabled')}
+        </Text>
       </Text>
 
       {(!nfcStatus.enabled || nfcStatus.hasNfc === null) && (
@@ -57,55 +45,44 @@ export const NFCSection: React.FC<NFCSectionProps> = ({
           onPress={onRefreshStatus}
           disabled={isLoading}
         >
-          <Text style={styles.refreshButtonText}>
+          <Text style={styles.buttonText}>
             {isLoading ? 'Checking...' : 'Refresh Status'}
           </Text>
         </TouchableOpacity>
       )}
       
       <TouchableOpacity
-        style={[styles.scanButton, (!canScan || isScanning || isLoading) && styles.buttonDisabled]}
+        style={[styles.scanButton, (!canScan || isScanning || isLoading) && styles.disabled]}
         onPress={onStartScan}
         disabled={!canScan || isScanning || isLoading}
       >
         {isScanning ? (
-          <View style={styles.scanningContainer}>
+          <View style={styles.scanning}>
             <ActivityIndicator color="#fff" size="small" />
-            <Text style={styles.scanningText}>Scanning...</Text>
+            <Text style={styles.buttonText}>Scanning...</Text>
           </View>
         ) : (
-          <Text style={styles.scanButtonText}>
+          <Text style={styles.scanText}>
             {isLoading ? 'Processing...' : 'Scan RFID'}
           </Text>
         )}
       </TouchableOpacity>
 
       {isScanning && (
-        <TouchableOpacity
-          style={styles.stopButton}
-          onPress={onStopScan}
-        >
-          <Text style={styles.stopButtonText}>Stop Scanning</Text>
+        <TouchableOpacity style={styles.stopButton} onPress={onStopScan}>
+          <Text style={styles.buttonText}>Stop Scanning</Text>
         </TouchableOpacity>
-      )}
-
-      {/* Help message when NFC is disabled */}
-      {nfcStatus.hasNfc && !nfcStatus.enabled && (
-        <Text style={styles.helpText}>
-          💡 Please enable NFC in your device settings
-        </Text>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scanSection: {
+  container: {
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 20,
     alignItems: 'flex-start',
-    marginBottom: 0,
     width: '100%',
     maxWidth: '100%',
     shadowColor: '#000',
@@ -116,15 +93,17 @@ const styles = StyleSheet.create({
     minHeight: 200,
     justifyContent: 'center',
   },
-
-  statusLabel: {
+  label: {
     fontSize: 14,
     color: '#666',
     fontWeight: '500',
   },
-  statusValue: {
+  value: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  spacing: {
+    paddingBottom: 10,
   },
   refreshButton: {
     backgroundColor: '#007AFF',
@@ -132,11 +111,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
-  },
-  refreshButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+    marginBottom: 8,
+    width: '100%',
   },
   scanButton: {
     backgroundColor: '#007AFF',
@@ -146,21 +122,6 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 10,
   },
-  scanningContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  scanningText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scanButtonText: {
-    color: 'white',
-    fontSize: 21,
-    fontWeight: 'bold',
-  },
   stopButton: {
     backgroundColor: '#FF3B30',
     padding: 12,
@@ -168,23 +129,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-  stopButtonText: {
+  scanning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  buttonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
-  buttonDisabled: {
+  scanText: {
+    color: 'white',
+    fontSize: 21,
+    fontWeight: 'bold',
+  },
+  disabled: {
     backgroundColor: '#CCCCCC',
     opacity: 0.6,
   },
-  helpText: {
+  help: {
     fontSize: 12,
     color: '#FF9500',
     textAlign: 'center',
     marginTop: 10,
     fontStyle: 'italic',
-  },
-  paddingsize :{
-    paddingBottom :10,
   },
 });

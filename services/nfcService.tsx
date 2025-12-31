@@ -2,21 +2,20 @@ import NfcManager, { NfcEvents } from 'react-native-nfc-manager';
 import { Platform, AppState } from 'react-native';
 
 class NFCService {
-  private nfcListeners: Array<{ event: string; listener: Function }> = [];
   private statusCallbacks: Array<(status: { hasNfc: boolean; enabled: boolean }) => void> = [];
 
   async initialize(): Promise<{ hasNfc: boolean; enabled: boolean }> {
     try {
-      const supported = await NfcManager.isSupported();
+      const hasNfc = await NfcManager.isSupported();
       
-      if (!supported) {
+      if (!hasNfc) {
         return { hasNfc: false, enabled: false };
       }
 
       await NfcManager.start();
       const enabled = await NfcManager.isEnabled();
       
-      return { hasNfc: true, enabled };
+      return { hasNfc, enabled };
     } catch (error) {
       console.error('NFC initialization error:', error);
       return { hasNfc: false, enabled: false };
@@ -26,11 +25,7 @@ class NFCService {
   async checkNfcStatus(): Promise<{ hasNfc: boolean; enabled: boolean }> {
     try {
       const hasNfc = await NfcManager.isSupported();
-      let enabled = false;
-      
-      if (hasNfc) {
-        enabled = await NfcManager.isEnabled();
-      }
+      const enabled = hasNfc ? await NfcManager.isEnabled() : false;
       
       return { hasNfc, enabled };
     } catch (error) {
@@ -42,47 +37,26 @@ class NFCService {
   addNfcStateListener(callback: (status: { hasNfc: boolean; enabled: boolean }) => void): () => void {
     this.statusCallbacks.push(callback);
 
-    if (Platform.OS === 'android') {
-      const appStateSubscription = AppState.addEventListener('change', async (nextAppState) => {
-        if (nextAppState === 'active') {
-          console.log('App became active, checking NFC status...');
-          const status = await this.checkNfcStatus();
-          callback(status);
-        }
-      });
+    const checkAndNotify = async () => {
+      const status = await this.checkNfcStatus();
+      callback(status);
+    };
 
-      const intervalId = setInterval(async () => {
-        const status = await this.checkNfcStatus();
-        callback(status);
-      }, 5000);
+    const intervalId = setInterval(checkAndNotify, Platform.OS === 'android' ? 5000 : 3000);
 
-      return () => {
-        appStateSubscription.remove();
-        clearInterval(intervalId);
-        this.statusCallbacks = this.statusCallbacks.filter(cb => cb !== callback);
-      };
-    } else {
-      const intervalId = setInterval(async () => {
-        const status = await this.checkNfcStatus();
-        callback(status);
-      }, 3000);
+    const appStateSubscription = Platform.OS === 'android' 
+      ? AppState.addEventListener('change', (nextAppState) => {
+          if (nextAppState === 'active') {
+            checkAndNotify();
+          }
+        })
+      : null;
 
-      return () => {
-        clearInterval(intervalId);
-        this.statusCallbacks = this.statusCallbacks.filter(cb => cb !== callback);
-      };
-    }
-  }
-
-  private async notifyStatusChange() {
-    const status = await this.checkNfcStatus();
-    this.statusCallbacks.forEach(callback => {
-      try {
-        callback(status);
-      } catch (error) {
-        console.error('Error in NFC status callback:', error);
-      }
-    });
+    return () => {
+      clearInterval(intervalId);
+      appStateSubscription?.remove();
+      this.statusCallbacks = this.statusCallbacks.filter(cb => cb !== callback);
+    };
   }
 
   convertUidToString(uid: any): string {
@@ -107,8 +81,8 @@ class NFCService {
     onSessionClosed: () => void
   ): Promise<void> {
     try {
-      const currentStatus = await this.checkNfcStatus();
-      if (!currentStatus.enabled) {
+      const { enabled } = await this.checkNfcStatus();
+      if (!enabled) {
         throw new Error('NFC is not enabled');
       }
 
@@ -118,19 +92,13 @@ class NFCService {
       await NfcManager.registerTagEvent();
       
       NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag: any) => {
-        console.log('NFC Tag Discovered:', tag);
-        
-        if (tag && tag.id) {
+        if (tag?.id) {
           const uid = this.convertUidToString(tag.id);
-          console.log('Converted UID:', uid);
           onTagDiscovered(uid);
         }
       });
 
-      NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
-        console.log('NFC Session Closed');
-        onSessionClosed();
-      });
+      NfcManager.setEventListener(NfcEvents.SessionClosed, onSessionClosed);
 
     } catch (error) {
       console.error('NFC scan error:', error);
@@ -143,9 +111,7 @@ class NFCService {
       NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
       NfcManager.setEventListener(NfcEvents.SessionClosed, null);
       await NfcManager.unregisterTagEvent().catch(() => {
-        console.log('NFC already unregistered');
       });
-      console.log('✅ NFC scanning stopped');
     } catch (error) {
       console.error('Error stopping NFC scan:', error);
       throw error;
@@ -153,13 +119,10 @@ class NFCService {
   }
 
   cleanup(): void {
-    console.log('🧹 Cleaning up NFC listeners...');
     NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
     NfcManager.setEventListener(NfcEvents.SessionClosed, null);
-    this.nfcListeners = [];
     this.statusCallbacks = [];
     NfcManager.cancelTechnologyRequest().catch(() => {
-      console.log('NFC cleanup completed');
     });
   }
 }

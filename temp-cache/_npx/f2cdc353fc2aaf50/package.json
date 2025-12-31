@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "npkill": "^0.12.2"
+  },
+  "_npx": {
+    "packages": [
+      "npkill"
+    ]
+  }
+}

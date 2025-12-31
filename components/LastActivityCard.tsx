@@ -9,23 +9,26 @@ interface LastActivityCardProps {
 export const LastActivityCard: React.FC<LastActivityCardProps> = ({ lastTap }) => {
   if (!lastTap) return null;
 
+  const { employee, action, room, timestamp } = lastTap;
+  const actionText = action === 'enter' ? 'entered' : 'exited';
+
   return (
-    <View style={styles.lastTapCard}>
-      <Text style={styles.lastTapTitle}>Last Activity</Text>
-      <Text style={styles.lastTapText}>
-        <Text style={styles.employeeName}>{lastTap.employee.name}</Text> 
-        {' '}{lastTap.action === 'enter' ? 'entered' : 'exited'}{' '}
-        <Text style={styles.roomName}>{lastTap.room.name}</Text>
+    <View style={styles.card}>
+      <Text style={styles.title}>Last Activity</Text>
+      <Text style={styles.text}>
+        <Text style={styles.employeeName}>{employee.name}</Text> 
+        {' '}{actionText}{' '}
+        <Text style={styles.roomName}>{room.name}</Text>
       </Text>
-      <Text style={styles.lastTapTime}>
-        {new Date(lastTap.timestamp).toLocaleTimeString()}
+      <Text style={styles.time}>
+        {new Date(timestamp).toLocaleTimeString()}
       </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  lastTapCard: {
+  card: {
     backgroundColor: '#e8f4fd',
     padding: 15,
     borderRadius: 12,
@@ -35,13 +38,13 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#007AFF',
   },
-  lastTapTitle: {
+  title: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 5,
   },
-  lastTapText: {
+  text: {
     fontSize: 14,
     color: '#333',
     marginBottom: 3,
@@ -54,7 +57,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FF6B35',
   },
-  lastTapTime: {
+  time: {
     fontSize: 12,
     color: '#666',
     fontStyle: 'italic',

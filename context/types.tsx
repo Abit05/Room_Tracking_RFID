@@ -16,9 +16,9 @@ export interface Room {
   id: number;
   name: string;
   description: string;
-  max_capacity: number;
   current_count: number;
   created_at: string;
+  is_full?: boolean;
 }
 
 export interface Employee {

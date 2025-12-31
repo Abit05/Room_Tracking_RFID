@@ -5,7 +5,6 @@ interface ActionButtonsProps {
   isLoading: boolean;
   onRefresh: () => void;
   onRegisterTest: () => void;
-  onTestConnection: () => void;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -13,29 +12,29 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onRefresh,
   onRegisterTest,
 }) => {
-  return (
-    <View style={styles.actionButtons}>
-      <TouchableOpacity
-        style={styles.refreshButton}
-        onPress={onRefresh}
-        disabled={isLoading}
-      >
-        <Text style={styles.buttonText}>Refresh Status</Text>
-      </TouchableOpacity>
+  const buttons = [
+    { text: 'Refresh Status', onPress: onRefresh, color: '#34C759' },
+    { text: 'Register Employee', onPress: onRegisterTest, color: '#FF9500' },
+  ];
 
-      <TouchableOpacity
-        style={styles.testButton}
-        onPress={onRegisterTest}
-        disabled={isLoading}
-      >
-        <Text style={styles.buttonText}>Register Employee</Text>
-      </TouchableOpacity>
+  return (
+    <View style={styles.container}>
+      {buttons.map((button, index) => (
+        <TouchableOpacity
+          key={index}
+          style={[styles.button, { backgroundColor: button.color }]}
+          onPress={button.onPress}
+          disabled={isLoading}
+        >
+          <Text style={styles.text}>{button.text}</Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  actionButtons: {
+  container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
@@ -44,34 +43,15 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 20,
   },
-  refreshButton: {
+  button: {
     flex: 1,
     minWidth: '48%',
-    backgroundColor: '#34C759',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 8,
   },
-  testButton: {
-    flex: 1,
-    minWidth: '48%',
-    backgroundColor: '#FF9500',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  connectionButton: {
-    flex: 1,
-    minWidth: '48%',
-    backgroundColor: '#5856D6',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  buttonText: {
+  text: {
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',

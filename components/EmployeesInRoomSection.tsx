@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Room } from '../context/types';
-import { EmployeeInRoom } from '../context/types';
+import { Room, EmployeeInRoom } from '../context/types';
 
 interface EmployeesInRoomSectionProps {
   employeesInRoom: EmployeeInRoom[];
@@ -10,120 +9,62 @@ interface EmployeesInRoomSectionProps {
 
 export const EmployeesInRoomSection: React.FC<EmployeesInRoomSectionProps> = ({
   employeesInRoom,
-  selectedRoom
 }) => {
   const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(timestamp).toLocaleTimeString([], {day : 'numeric', month : 'numeric', year : 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  const getStatusColor = (duration: string) => {
+  const getStatusColor = (duration: string): string => {
+    if (!duration || duration.trim() === '') return '#34C759';
+
+    // Match "Xd Yh Zm", "Xd", "Yh", etc.
+    const daysMatch = duration.match(/(\d+)d/);
     const hoursMatch = duration.match(/(\d+)h/);
+
+    const days = daysMatch ? parseInt(daysMatch[1], 10) : 0;
     const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
-    
-    if (hours < 1) return '#34C759';
-    if (hours < 2) return '#FF9500'; 
-    return '#FF3B30'; 
-  };
 
-  const getCapacityBarColor = () => {
-    if (!selectedRoom) return '#34C759';
-    
-    const occupancyRatio = selectedRoom.current_count / selectedRoom.max_capacity;
-    
-    if (occupancyRatio >= 1) return '#FF3B30';
-    if (occupancyRatio >= 0.8) return '#FF9500'; 
-    return '#34C759'; 
-  };
+    const totalHours = days * 24 + hours;
 
-  const hasDataDiscrepancy = selectedRoom && 
-    selectedRoom.current_count > 0 && 
-    employeesInRoom.length === 0;
+    if (totalHours < 24) {
+      return '#34C759'; // green (< 1 day)
+    } else if (totalHours < 24 * 7) {
+      return '#FF9500'; // orange (1–6 days)
+    } else {
+      return '#FF3B30'; // red (7 days or more)
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Who's in the Room</Text>
-      
-      {hasDataDiscrepancy ? (
-        <View style={styles.discrepancyWarning}>
-          <Text style={styles.warningText}>⚠️ Data Sync Issue</Text>
-          <Text style={styles.warningSubtext}>
-            Room shows {selectedRoom.current_count} people but detailed information is unavailable
-          </Text>
-        </View>
-      ) : (
-        <Text style={styles.subtitle}>
-          {employeesInRoom.length} {employeesInRoom.length === 1 ? 'person' : 'people'} currently
-          {selectedRoom && ` in ${selectedRoom.name}`}
-        </Text>
-      )}
+      <Text style={styles.title}>Employees in the Company</Text>
 
       {employeesInRoom.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>
-            {hasDataDiscrepancy ? 'Detailed occupancy data unavailable' : 'No one in the room'}
-          </Text>
-          <Text style={styles.emptySubtext}>
-            {hasDataDiscrepancy 
-              ? 'The room may have people but individual data is not available' 
-              : 'The room is currently empty'
-            }
-          </Text>
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No one in the Company</Text>
+          <Text style={styles.emptySubtext}>The Company is currently empty</Text>
         </View>
       ) : (
-        <View style={styles.employeesList}>
+        <View style={styles.list}>
           {employeesInRoom.map((employee, index) => (
-            <View key={employee.id} style={styles.employeeItem}>
-              <View style={styles.employeeHeader}>
-                <View style={styles.employeeInfo}>
-                  <Text style={styles.employeeName}>{employee.employee_name}</Text>
-                  <Text style={styles.employeeId}>ID: {employee.employee_uid}</Text>
+            <View key={`${employee.employee_id}-${index}`} style={styles.item}>
+              <View style={styles.header}>
+                <View style={styles.info}>
+                  <Text style={styles.name}>{employee.employee_name}</Text>
+                  <Text style={styles.id}>ID: {employee.employee_uid}</Text>
                 </View>
-                <View style={[styles.durationBadge, { backgroundColor: getStatusColor(employee.duration || '0m') }]}>
-                  <Text style={styles.durationText}>{employee.duration}</Text>
+                <View style={[styles.duration, { backgroundColor: getStatusColor(employee.duration || '0m') }]}>
+                  <Text style={styles.durationText}>{employee.duration || '0m'}</Text>
                 </View>
               </View>
               
-              <View style={styles.employeeDetails}>
-                <Text style={styles.enteredText}>
-                  Entered at {formatTime(employee.entered_at)}
-                </Text>
-              </View>
+              <Text style={styles.entered}>Entered at {formatTime(employee.entered_at)}</Text>
               
               {index < employeesInRoom.length - 1 && <View style={styles.separator} />}
             </View>
           ))}
         </View>
       )}
-
-      {/* Room Capacity Info - Use current_count from room status */}
-    {selectedRoom && (
-    <View style={styles.capacityInfo}>
-        <Text style={styles.capacityText}>
-        Room Capacity: {employeesInRoom.length} / {selectedRoom.max_capacity}
-        </Text>
-        <View style={styles.capacityBar}>
-        <View 
-            style={[
-            styles.capacityFill, 
-            { 
-                width: `${Math.min((employeesInRoom.length / selectedRoom.max_capacity) * 100, 100)}%`,
-                backgroundColor: getCapacityBarColor()
-            }
-            ]} 
-        />
-        </View>
-        <Text style={styles.currentCount}>
-        Current count: {employeesInRoom.length}
-        {employeesInRoom.length !== selectedRoom.current_count && ' (accurate)'}
-        </Text>
-        {employeesInRoom.length !== selectedRoom.current_count && (
-        <Text style={styles.syncNote}>
-            Room status syncing... showing {employeesInRoom.length} people
-        </Text>
-        )}
-  </View>
-)}
     </View>
   );
 };
@@ -153,25 +94,29 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
   },
-  discrepancyWarning: {
-    backgroundColor: '#FFF3CD',
+  subtitleOver: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+  },
+  fullWarning: {
+    backgroundColor: '#FFE5E5',
     padding: 12,
     borderRadius: 8,
-    marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#FFA000',
+    borderLeftColor: '#FF3B30',
+    marginBottom: 12,
   },
-  warningText: {
-    fontSize: 14,
+  fullWarningText: {
+    color: '#FF3B30',
     fontWeight: 'bold',
-    color: '#856404',
-    marginBottom: 4,
+    fontSize: 14,
+    marginBottom: 2,
   },
-  warningSubtext: {
+  fullWarningSubtext: {
+    color: '#FF3B30',
     fontSize: 12,
-    color: '#856404',
   },
-  emptyState: {
+  empty: {
     alignItems: 'center',
     padding: 20,
   },
@@ -179,40 +124,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     marginBottom: 8,
-    textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
     color: '#CCC',
-    textAlign: 'center',
   },
-  employeesList: {
+  list: {
     gap: 0,
   },
-  employeeItem: {
+  item: {
     paddingVertical: 12,
   },
-  employeeHeader: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 6,
   },
-  employeeInfo: {
+  info: {
     flex: 1,
     marginRight: 12,
   },
-  employeeName: {
+  name: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 2,
   },
-  employeeId: {
+  id: {
     fontSize: 12,
     color: '#666',
   },
-  durationBadge: {
+  duration: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -224,12 +167,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  employeeDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  enteredText: {
+  entered: {
     fontSize: 12,
     color: '#666',
     fontStyle: 'italic',
@@ -239,7 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     marginVertical: 8,
   },
-  capacityInfo: {
+  capacity: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
@@ -251,27 +189,35 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
-  capacityBar: {
+  capacityTextOver: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+  },
+  bar: {
     height: 6,
     backgroundColor: '#f0f0f0',
     borderRadius: 3,
     overflow: 'hidden',
     marginBottom: 8,
   },
-  capacityFill: {
+  fill: {
     height: '100%',
     borderRadius: 3,
   },
-  currentCount: {
+  count: {
     fontSize: 12,
     color: '#666',
     textAlign: 'center',
     fontStyle: 'italic',
     marginBottom: 4,
   },
-  syncNote: {
+  countOver: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+  },
+  overText: {
     fontSize: 10,
-    color: '#FFA000',
+    color: '#FF3B30',
     textAlign: 'center',
     fontStyle: 'italic',
   },

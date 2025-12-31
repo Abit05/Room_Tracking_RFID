@@ -1,18 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {View, StyleSheet, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator, ScrollView,} from 'react-native';
 import { LinearGradient } from 'react-native-linear-gradient';
 import NfcManager, { NfcEvents } from 'react-native-nfc-manager';
-
-const API_BASE_URL = 'http://192.168.137.1:3000';
+import { apiService } from '../services/apiService';
 
 export default function RegisterScreen({ navigation, route }: { navigation: any; route?: any }) {
   const [firstName, setFirstName] = useState('');
@@ -22,16 +12,90 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
   const [isScanning, setIsScanning] = useState(false);
   const [hasNfc, setHasNfc] = useState<boolean | null>(null);
   const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [isCheckingCard, setIsCheckingCard] = useState(false);
+  const [cardStatus, setCardStatus] = useState<'unknown' | 'available' | 'registered'>('unknown');
+
+  // Move convertUidToString inside useCallback or make it stable
+  const convertUidToString = useCallback((uid: any): string => {
+    try {
+      if (typeof uid === 'string') {
+        return uid.replace(/[:\\s-]/g, '').toUpperCase();
+      } else if (Array.isArray(uid)) {
+        return uid.map(byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+      } else if (typeof uid === 'object' && uid.value) {
+        // Recursive call but now it's stable due to useCallback
+        return convertUidToString(uid.value);
+      } else {
+        return String(uid).replace(/[:\\s-]/g, '').toUpperCase();
+      }
+    } catch (error) {
+      console.error('Error converting UID:', error);
+      return 'unknown';
+    }
+  }, []);
+
+    // Wrap checkCardRegistration in useCallback
+  const checkCardRegistration = useCallback(async (uid: string) => {
+    setIsCheckingCard(true);
+    try {
+      // Try to get all employees and check if this UID exists
+      const response = await apiService.getEmployees();
+      console.log('Employees response:', response); // Debug log
+      
+      // Check different possible response structures
+      const employees = response.employees || response || [];
+      
+      console.log('Normalized UID to check:', convertUidToString(uid));
+      console.log('Employees list:', employees);
+      
+      const isRegistered = employees.some((employee: any) => {
+        if (!employee.uid) return false;
+        const employeeUid = convertUidToString(employee.uid);
+        const scannedUidNormalized = convertUidToString(uid);
+        console.log(`Comparing: ${employeeUid} === ${scannedUidNormalized}`);
+        return employeeUid === scannedUidNormalized;
+      });
+
+      if (isRegistered) {
+        setCardStatus('registered');
+        const existingEmployee = employees.find((emp: any) => 
+          emp.uid && convertUidToString(emp.uid) === convertUidToString(uid)
+        );
+        Alert.alert(
+          'Card Already Registered', 
+          `This RFID card is already registered to:\n\n${existingEmployee?.first_name || 'Unknown'} ${existingEmployee?.last_name || ''}\n\nUID: ${uid}\n\nPlease use a different RFID card.`
+        );
+      } else {
+        setCardStatus('available');
+        Alert.alert(
+          'Card Available', 
+          `This RFID card is available for registration!\n\nUID: ${uid}\n\nPlease enter employee details to complete registration.`
+        );
+      }
+    } catch (error: any) {
+      console.error('Error checking card registration:', error);
+      setCardStatus('unknown');
+      
+      // More specific error messages
+      if (error.message?.includes('404') || error.message?.includes('Not Found')) {
+        Alert.alert('Server Error', 'Employees endpoint not found. Please check if the backend is running.');
+      } else if (error.message?.includes('Network request failed')) {
+        Alert.alert('Connection Error', 'Cannot connect to server. Please check your connection.');
+      } else {
+        Alert.alert('Check Failed', error.message || 'Could not verify card status. Please try again.');
+      }
+    } finally {
+      setIsCheckingCard(false);
+    }
+  }, [convertUidToString]);
 
   useEffect(() => {
     if (route?.params?.uid) {
       setScannedUid(route.params.uid);
-      Alert.alert(
-        'UID Received',
-        `UID from tap: ${route.params.uid}\n\nPlease enter employee name to complete registration.`
-      );
+      checkCardRegistration(route.params.uid);
+      Alert.alert('UID Received', `UID from tap: ${route.params.uid}\n\nPlease enter employee name to complete registration.`);
     }
-  }, [route?.params?.uid]);
+  }, [route?.params?.uid, checkCardRegistration]);
 
   useEffect(() => {
     const checkNfc = async () => {
@@ -56,23 +120,6 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
     };
   }, []);
 
-  const convertUidToString = (uid: any): string => {
-    try {
-      if (typeof uid === 'string') {
-        return uid.replace(/[:\\s-]/g, '').toUpperCase();
-      } else if (Array.isArray(uid)) {
-        return uid.map(byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
-      } else if (typeof uid === 'object' && uid.value) {
-        return convertUidToString(uid.value);
-      } else {
-        return String(uid).replace(/[:\\s-]/g, '').toUpperCase();
-      }
-    } catch (error) {
-      console.error('Error converting UID:', error);
-      return 'unknown';
-    }
-  };
-
   const startRFIDScan = async () => {
     if (!hasNfc) {
       Alert.alert('NFC Not Supported', 'NFC is not supported on this device.');
@@ -85,6 +132,7 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
     }
 
     setIsScanning(true);
+    setCardStatus('unknown');
 
     try {
       await NfcManager.start();
@@ -94,12 +142,9 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
           setScannedUid(uid);
           setIsScanning(false);
 
-          Alert.alert(
-            'RFID Card Scanned',
-            `UID: ${uid}\n\nThis card will be linked to the employee.`,
-            [{ text: 'OK' }]
-          );
-
+          // Immediately check if card is already registered
+          checkCardRegistration(uid);
+          
           NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
           NfcManager.unregisterTagEvent().catch(() => 0);
         }
@@ -143,45 +188,21 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
       return;
     }
 
-    if (lastName.trim().length < 1) {
-      Alert.alert('Error', 'Please enter last name');
+    if (!scannedUid) {
+      Alert.alert('Error', 'Please scan an RFID card for the employee');
       return;
     }
 
-    if (!scannedUid) {
-      Alert.alert('Error', 'Please scan an RFID card for the employee');
+    // Double check if card is registered (in case status changed)
+    if (cardStatus === 'registered') {
+      Alert.alert('Card Registered', 'This card is already registered. Please use a different card.');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          uid: scannedUid,
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Registration failed';
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch (e) {
-          errorMessage = errorText || `Server error: ${response.status}`;
-        }
-        
-        throw new Error(errorMessage);
-      }
+      await apiService.registerEmployee(scannedUid, firstName.trim(), lastName.trim());
 
       const fullName = `${firstName} ${lastName}`;
       Alert.alert(
@@ -191,7 +212,10 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
           { 
             text: 'OK', 
             onPress: () => {
-              resetForm();
+              setFirstName('');
+              setLastName('');
+              setScannedUid(null);
+              setCardStatus('unknown');
               navigation.navigate('RoomTracking');
             }
           }
@@ -202,6 +226,7 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
       console.error('Registration error:', error);
       
       if (error.message?.includes('already registered')) {
+        setCardStatus('registered');
         Alert.alert('Registration Failed', 'This RFID card is already registered to another employee.');
       } else if (error.message?.includes('Network request failed')) {
         Alert.alert('Connection Error', 'Cannot connect to server. Please check your connection.');
@@ -213,71 +238,90 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
     }
   };
 
-  const resetForm = () => {
-    setFirstName('');
-    setLastName('');
-    setScannedUid(null);
+  const getCardStatusText = () => {
+    switch (cardStatus) {
+      case 'available':
+        return { text: '✓ Available for registration', color: '#34C759' };
+      case 'registered':
+        return { text: '✗ Already registered', color: '#FF3B30' };
+      case 'unknown':
+        return { text: 'Scan a card to check status', color: '#666' };
+      default:
+        return { text: 'Scan a card to check status', color: '#666' };
+    }
   };
 
-  const isFormValid = () => {
-    return firstName.trim().length >= 2 && 
-           lastName.trim().length >= 1 && 
-           scannedUid !== null;
+  const getCardStatusIcon = () => {
+    switch (cardStatus) {
+      case 'available':
+        return '✓';
+      case 'registered':
+        return '✗';
+      default:
+        return '?';
+    }
   };
+
+  const isFormValid = firstName.trim().length >= 2 && 
+                     lastName.trim().length >= 1 && 
+                     scannedUid !== null && 
+                     cardStatus === 'available';
+
+  const statusInfo = getCardStatusText();
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <View style={styles.backgroundContainer}>
-          <LinearGradient
-            colors={['#ffbf00', '#ff8c00', '#04ded3', '#0463de', '#02b30e']}
-            style={StyleSheet.absoluteFillObject}/>
-        </View>
+        <LinearGradient
+          colors={['#ffbf00', '#ff8c00', '#04ded3', '#0463de', '#02b30e']}
+          style={StyleSheet.absoluteFillObject}/>
         
-        <View style={styles.subcontainer}>
+        <View style={styles.content}>
           <Text style={styles.title}>Register Employee</Text>
-
-          <Text style={styles.registrationNote}>
-            Scan an RFID card and enter employee details to register for room access.
-          </Text>
+          <Text style={styles.subtitle}>Scan an RFID card and enter employee details to register for room access.</Text>
 
           {/* RFID Scan Section */}
-          <View style={styles.rfidSection}>
+          <View style={styles.section}>
             <Text style={styles.label}>Employee RFID Card *</Text>
-            <Text style={styles.note}>
-              Scan the RFID card that will be assigned to this employee.
-            </Text>
+            <Text style={styles.note}>Scan the RFID card that will be assigned to this employee.</Text>
             
             <TouchableOpacity
-              style={[styles.scanButton, isScanning && styles.buttonDisabled]}
+              style={[styles.button, isScanning && styles.disabled]}
               onPress={startRFIDScan}
               disabled={isScanning}
             >
               {isScanning ? (
-                <View style={styles.scanningContainer}>
+                <View style={styles.scanning}>
                   <ActivityIndicator color="#fff" size="small" />
-                  <Text style={styles.scanningText}>Scanning...</Text>
+                  <Text style={styles.buttonText}>Scanning...</Text>
                 </View>
               ) : (
-                <Text style={styles.scanButtonText}>
+                <Text style={styles.buttonText}>
                   {scannedUid ? 'Rescan RFID Card' : 'Scan Employee RFID Card'}
                 </Text>
               )}
             </TouchableOpacity>
 
             {isScanning && (
-              <TouchableOpacity
-                style={styles.stopButton}
-                onPress={stopRFIDScan}
-              >
-                <Text style={styles.stopButtonText}>Stop Scanning</Text>
+              <TouchableOpacity style={styles.stopButton} onPress={stopRFIDScan}>
+                <Text style={styles.buttonText}>Stop Scanning</Text>
               </TouchableOpacity>
             )}
             
             {scannedUid && (
               <View style={styles.uidDisplay}>
-                <Text style={styles.uidLabel}>Scanned UID: {scannedUid}</Text>
-                <Text style={styles.uidStatus}>✓ Ready for registration</Text>
+                <View style={styles.uidHeader}>
+                  <Text style={styles.uidLabel}>Scanned UID: {scannedUid}</Text>
+                  <Text style={[styles.statusIcon, { color: statusInfo.color }]}>
+                    {getCardStatusIcon()}
+                  </Text>
+                </View>
+                <Text style={[styles.uidStatus, { color: statusInfo.color }]}>
+                  {isCheckingCard ? 'Checking registration...' : statusInfo.text}
+                </Text>
+                {isCheckingCard && (
+                  <ActivityIndicator size="small" color={statusInfo.color} style={styles.checkingIndicator} />
+                )}
               </View>
             )}
           </View>
@@ -304,50 +348,29 @@ export default function RegisterScreen({ navigation, route }: { navigation: any;
           />
 
           {/* Action Buttons */}
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.registerButton, (!isFormValid() || isLoading) && styles.buttonDisabled]}
-              onPress={handleRegister}
-              disabled={!isFormValid() || isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  Register with RFID
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity
-            style={styles.TrackButton}
-            onPress={() => navigation.navigate('RoomTracking')}
+            style={[styles.registerButton, (!isFormValid || isLoading) && styles.disabled]}
+            onPress={handleRegister}
+            disabled={!isFormValid || isLoading}
           >
-            <Text style={styles.buttonText}>
-              Back to Room Tracking
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {cardStatus === 'registered' ? 'Card Already Registered' : 'Register with RFID'}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('RoomTracking')}>
+            <Text style={styles.buttonText}>Back to Room Tracking</Text>
           </TouchableOpacity>
 
           {/* NFC Status */}
-          <View style={styles.statusContainer}>
-            {hasNfc === false && (
-              <Text style={styles.errorText}>
-                NFC is not supported on this device
-              </Text>
-            )}
-
-            {hasNfc && enabled === false && (
-              <Text style={styles.warningText}>
-                Please enable NFC in your device settings
-              </Text>
-            )}
-
-            {hasNfc && enabled && (
-              <Text style={styles.successText}>
-                NFC is ready for scanning
-              </Text>
-            )}
+          <View style={styles.status}>
+            {hasNfc === false && <Text style={styles.error}>NFC is not supported on this device</Text>}
+            {hasNfc && enabled === false && <Text style={styles.warning}>Please enable NFC in your device settings</Text>}
+            {hasNfc && enabled && <Text style={styles.success}>NFC is ready for scanning</Text>}
           </View>
         </View>
       </View>
@@ -366,7 +389,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  subcontainer: {
+  content: {
     backgroundColor: '#ffffff',
     padding: 25,
     borderRadius: 25,
@@ -377,13 +400,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#fc0303',
   },
-  backgroundContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -391,14 +407,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-  registrationNote: {
+  subtitle: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 18,
   },
-  rfidSection: {
+  section: {
     marginBottom: 20,
     padding: 15,
     backgroundColor: '#f8f9fa',
@@ -406,24 +422,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  scanButton: {
+  button: {
     backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 10,
   },
-  scanningContainer: {
+  scanning: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  scanningText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scanButtonText: {
+  buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
@@ -435,19 +446,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  stopButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   uidDisplay: {
     backgroundColor: '#e9ecef',
     padding: 12,
     borderRadius: 8,
     marginTop: 10,
+  },
+  uidHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 5,
   },
   uidLabel: {
     fontSize: 14,
@@ -455,19 +464,16 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     flex: 1,
   },
+  statusIcon: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   uidStatus: {
     fontSize: 12,
-    color: '#34C759',
     fontWeight: '600',
   },
-  clearButton: {
-    padding: 5,
-    marginLeft: 10,
-  },
-  clearButtonText: {
-    color: '#FF3B30',
-    fontSize: 12,
-    fontWeight: '600',
+  checkingIndicator: {
+    marginTop: 5,
   },
   label: {
     fontSize: 16,
@@ -493,9 +499,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     fontSize: 16,
   },
-  actionButtons: {
-    marginBottom: 15,
-  },
   registerButton: {
     backgroundColor: '#34C759',
     padding: 18,
@@ -503,38 +506,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  buttonDisabled: {
-    backgroundColor: '#CCCCCC',
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  TrackButton: {
+  backButton: {
     backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 10,
   },
-  statusContainer: {
+  disabled: {
+    backgroundColor: '#CCCCCC',
+    opacity: 0.6,
+  },
+  status: {
     marginTop: 10,
   },
-  errorText: {
+  error: {
     color: 'red',
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',
   },
-  warningText: {
+  warning: {
     color: '#FF9500',
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',
   },
-  successText: {
+  success: {
     color: '#34C759',
     textAlign: 'center',
     fontSize: 14,
